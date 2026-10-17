@@ -41,8 +41,8 @@ static Rational rational(int64_t n, int64_t d) {
   return (Rational){n / a, d / a};
 }
 
-/* With at most four leaves in 1..12, numerator and denominator magnitudes
- * are bounded by 2^(4-1) * 12^4 = 165888, well within int64_t. */
+/* With at most four leaves in 1..10, numerator and denominator magnitudes
+ * are bounded by 2^(4-1) * 10^4 = 80000, well within int64_t. */
 static Rational calculate(Rational a, Rational b, char op) {
   switch (op) {
   case '+': return rational(a.n * b.d + b.n * a.d, a.d * b.d);
@@ -146,7 +146,7 @@ static int valid_expression(const char *text, const int inputs[4]) {
       errno = 0;
       char *end;
       long n = strtol(text, &end, 10);
-      if (errno == ERANGE || n < 1 || n > 12 || nv == 4) return 0;
+      if (errno == ERANGE || n < 1 || n > 10 || nv == 4) return 0;
       int i;
       for (i = 0; i < 4; i++) {
         if (!used[i] && n == inputs[i]) {
@@ -212,11 +212,11 @@ static int line(FILE *file, char *text, size_t capacity) {
 static void parse_inputs(const char *text, int inputs[4]) {
   for (int i = 0; i < 4; i++) {
     while (isspace((unsigned char)*text)) text++;
-    if (!isdigit((unsigned char)*text)) die("expected four integers in 1..12");
+    if (!isdigit((unsigned char)*text)) die("expected four integers in 1..10");
     errno = 0;
     char *end;
     long n = strtol(text, &end, 10);
-    if (errno == ERANGE || n < 1 || n > 12) die("input outside 1..12");
+    if (errno == ERANGE || n < 1 || n > 10) die("input outside 1..10");
     if (*end && !isspace((unsigned char)*end)) die("inputs need whitespace");
     inputs[i] = (int)n;
     text = end;

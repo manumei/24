@@ -11,7 +11,8 @@ and `/`, and merges equal results. It uses neither game24 nor floating point.
 A separate stack evaluator checks the expected expressions exactly, including
 operand multiplicities. The 40 solvable fixtures include different expression
 shapes, duplicates, fractional intermediates, and both range boundaries. The
-20 impossible fixtures include `6 7 7 8` and cases containing 11 and 12.
+20 impossible fixtures include `6 7 7 8`. All input numbers are in 1-10;
+the reference verifier enforces this range.
 
 For standalone use, compile `testgame.c` with C99 and `-lm`, then run:
 
@@ -29,8 +30,7 @@ suffix. The current solver has no prompt; unexpected text is rejected. Success
 prints only `24` and failure prints a diagnostic to stderr and exits nonzero.
 
 Impossible cases must print `No solution`, ignoring surrounding whitespace
-only. The current game24 accepts 1-10, so fixtures containing 11 or 12 still
-fail.
+only.
 
 `../timer.sh` compiles once into a temporary directory and runs `timer.py`.
 The timer uses seed 24 and 1000 inputs in 1-10, captures stdout/stderr, and
