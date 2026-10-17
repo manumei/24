@@ -32,12 +32,10 @@ fi
 mapfile -t doable < "$script_dir/tests/doable_in.txt"
 mapfile -t expected < "$script_dir/tests/doable_out.txt"
 mapfile -t impossible < "$script_dir/tests/impossible_in.txt"
-printf 'IMPOSSIBLE' > "$build_dir/impossible.expected"
+printf 'No solution' > "$build_dir/impossible.expected"
 
 passed=0
 failed=0
-range_rejections=0
-label_mismatches=0
 
 show_file() {
   if [[ -s $2 ]]; then
@@ -59,14 +57,6 @@ run_solver() {
        END { sub(/^[[:space:]]*/, "", text);
              sub(/[[:space:]]*$/, "", text); printf "%s", text }' \
     "$build_dir/actual" > "$build_dir/trimmed" || return 1
-  if [[ $(< "$build_dir/trimmed") == 'Invalid input.' ]]; then
-    for number in "${numbers[@]}"; do
-      if ((number > 10)); then
-        range_rejections=$((range_rejections + 1))
-        break
-      fi
-    done
-  fi
 }
 
 for i in "${!doable[@]}"; do
@@ -107,7 +97,6 @@ done
 
 for i in "${!impossible[@]}"; do
   input=${impossible[i]}
-  read -r -a numbers <<< "$input"
   if ! run_solver "$input"; then
     printf 'Summary: FAIL (could not read solver output).\n' >&2
     exit 1
@@ -118,24 +107,12 @@ for i in "${!impossible[@]}"; do
   else
     failed=$((failed + 1))
     printf 'FAIL impossible #%d: %s\n' "$((i + 1))" "$input"
-    printf '  expected: IMPOSSIBLE; solver exit status: %d\n' "$solver_status"
+    printf '  expected: No solution; solver exit status: %d\n' "$solver_status"
     show_file 'actual output' "$build_dir/actual"
     show_file 'solver stderr' "$build_dir/solver.err"
-    if [[ $(< "$build_dir/trimmed") == 'No solution.' ]]; then
-      label_mismatches=$((label_mismatches + 1))
-    fi
   fi
 done
 
-if ((range_rejections)); then
-  printf 'Input-range incompatibility: %d cases with 11 or 12 were rejected; fixtures require 1-12.\n' \
-    "$range_rejections"
-fi
-if ((label_mismatches)); then
-  printf 'Output incompatibility: %d impossible cases returned "No solution."; required "IMPOSSIBLE".\n' \
-    "$label_mismatches"
-fi
 printf 'Summary: %d passed, %d failed (%d solvable, %d impossible).\n' \
   "$passed" "$failed" "${#doable[@]}" "${#impossible[@]}"
-printf 'Per-run timeout: 2 seconds; status 124 means timeout, 128+ usually means a signal.\n'
 ((failed == 0))

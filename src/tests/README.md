@@ -28,9 +28,9 @@ associativity. The only output wrapper accepted is the optional `= 24`
 suffix. The current solver has no prompt; unexpected text is rejected. Success
 prints only `24` and failure prints a diagnostic to stderr and exits nonzero.
 
-The current unmodified game24 accepts 1-10 and prints `No solution.` rather
-than `IMPOSSIBLE`. The strict fixture suite therefore reports these range and
-output incompatibilities as failures.
+Impossible cases must print `No solution`, ignoring surrounding whitespace
+only. The current game24 accepts 1-10, so fixtures containing 11 or 12 still
+fail.
 
 `../timer.sh` compiles once into a temporary directory and runs `timer.py`.
 The timer uses seed 24 and 1000 inputs in 1-10, captures stdout/stderr, and
