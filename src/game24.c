@@ -7,10 +7,11 @@
 
 typedef struct {
   double value;
-  char text[TEXT_SIZE]; // the path (operations) to get to the number so far
+  char text[TEXT_SIZE]; // operations to get to the number
 } Number;
 
 bool solve(Number numbers[], int count) {
+  // only one number left, check whether we reached 24
   if (count == 1) {
     if (fabs(numbers[0].value - 24.0) < EPSILON) {
       printf("%s = 24\n", numbers[0].text);
@@ -19,16 +20,17 @@ bool solve(Number numbers[], int count) {
     return false;
   }
 
+  // go through the remaining cards, try combinations
   for (int i = 0; i < count; i++) {
     for (int j = 0; j < count; j++) {
-      if (i == j) {
+      if (i == j) { // not same entry twice
         continue;
       }
 
       Number next[4];
       int remaining = 0;
 
-      // copy all numbers except the current pair
+      // copy all numbers except current pair
       for (int k = 0; k < count; k++) {
         if (k != i && k != j) {
           next[remaining++] = numbers[k];
@@ -39,7 +41,12 @@ bool solve(Number numbers[], int count) {
       double b = numbers[j].value;
       char operators[] = "+-*/";
 
+      // try all operations on the pair
       for (int op = 0; op < 4; op++) {
+        // commutative! a+b=b+a and a*b=b*a, so skip reversed duplicates
+        if (i > j && (operators[op] == '+' || operators[op] == '*')) {
+          continue;
+        }
         double result;
 
         switch (operators[op]) {
@@ -53,7 +60,7 @@ bool solve(Number numbers[], int count) {
           result = a * b;
           break;
         case '/':
-          if (fabs(b) < EPSILON) {
+          if (fabs(b) < EPSILON) { // no division by zero
             continue;
           }
           result = a / b;
@@ -62,31 +69,34 @@ bool solve(Number numbers[], int count) {
           continue;
         }
 
-        // Add the result after the remaining numbers
+        // add the result after the remaining numbers
         next[remaining].value = result;
+
+        // keep track of how the result was obtained
         int length = snprintf(next[remaining].text, TEXT_SIZE, "(%s %c %s)",
                               numbers[i].text, operators[op], numbers[j].text);
 
-        // make sure no format errors
-        // should never be <0, should NOT exceed 128 in real world
+        // check for format errors or text that didn't fit (it should)
         if (length < 0 || length >= TEXT_SIZE) {
           continue;
         }
 
-        // recurse
+        // recurse (one fewer card)
         if (solve(next, count - 1)) {
-          return true;
+          return true; // solution found, stop searching
         }
+        // otherwise, continue
       }
     }
   }
 
-  return false;
+  return false; // all combinations tried, no solution
 }
 
 int main(void) {
   Number numbers[4];
 
+  // read and check the four input cards
   for (int i = 0; i < 4; i++) {
     int value;
 
@@ -95,12 +105,13 @@ int main(void) {
       return 1;
     }
 
+    // at first each Number's text is just the number
     numbers[i].value = value;
     snprintf(numbers[i].text, TEXT_SIZE, "%d", value);
   }
 
+  // solve prints the expression if a solution is found
   bool solution = solve(numbers, 4);
-  // solve has inbuilt print, nicer than passing big chars
 
   if (!solution) {
     printf("No solution\n");
