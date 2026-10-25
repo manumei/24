@@ -14,7 +14,7 @@ bool solve(Number numbers[], int count) {
   // only one number left, check whether we reached 24
   if (count == 1) {
     if (fabs(numbers[0].value - 24.0) < EPSILON) {
-      printf("%s = 24\n", numbers[0].text);
+      printf("%s\n", numbers[0].text);
       return true;
     }
     return false;
